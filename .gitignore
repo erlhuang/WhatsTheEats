@@ -1,0 +1,5 @@
+logs/
+__pycache__/
+project_env/
+tests.py
+app.db
