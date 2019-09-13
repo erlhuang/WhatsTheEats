@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <h1>{{ _('%(listing)s', listing=listing.title) }}
+  <!-- <button type="button" class="btn btn-outline-primary">Like</button></h1> -->
+    <form id="ratings" method="post">
+      {% if listing.voteup %}
+        <input type="submit" id="like" class="btn btn-primary btn-lg active" role="button" value="Like">
+      {% else %}
+        <input type="submit" id="like" class="btn btn-primary btn-lg" role="button" value="Like">
+      {% endif %}
+      {% if listing.votedown %}
+        <input type="submit" id="dislike" class="btn btn-primary btn-lg active" role="button" value="Dislike">
+      {% else %}
+        <input type="submit" id="dislike" class="btn btn-primary btn-lg" role="button" value="Dislike">
+      {% endif %}
+    </form>
+  </h1>
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  <script type="text/javascript">
+    $('#like').click(function() {
+      $(this).toggleClass('active');
+      $('#dislike').removeClass('active');
+    });
+
+    $('#dislike').click(function() {
+      $(this).toggleClass('active');
+      $('#like').removeClass('active');
+    });
+  </script>
+  {% for item in listing.menu_items %}
+      {% include '_item.html' %}
+  {% endfor %}
+{% endblock %}

@@ -26,7 +26,7 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index') #if there wasn't one go to home
         return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+    return render_template('auth/login.html', title='Sign In', form=form)
 
 @bp.route('/logout')
 def logout():
@@ -45,7 +45,7 @@ def register():
         db.session.commit()
         flash('Congrats, you are registered! Please log in!')
         return redirect(url_for('login')) #after registration redirect to login
-    return render_template('register.html', title='Register', form=form)
+    return render_template('auth/register.html', title='Register', form=form)
 
 @bp.route('/reset_password_request', methods=['GET', 'POST'])
 def reset_password_request():
@@ -58,7 +58,7 @@ def reset_password_request():
             send_password_reset_email(user)
         flash('Reset password instructions have been sent to your email.')
         return redirect(url_for('login'))
-    return render_template('reset_password_request.html', title='Reset Password', form=form)
+    return render_template('auth/reset_password_request.html', title='Reset Password', form=form)
 
 @bp.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
@@ -73,4 +73,4 @@ def reset_password(token):
         db.session.commit()
         flash('Your password has been reset.')
         return redirect(url_for('login'))
-    return render_template('reset_password.html', form=form)
+    return render_template('auth/reset_password.html', form=form)

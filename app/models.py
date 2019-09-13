@@ -118,8 +118,45 @@ class Post(SearchableMixin, db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     language = db.Column(db.String(5))
     __searchable__ = ['body'] #post must have body field indexed
+
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+class Listing(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50))
+    acronym = db.Column(db.String(50))
+    imageurl = db.Column(db.String(2048))
+    voteup = db.Column(db.Boolean)
+    votedown = db.Column(db.Boolean)
+    upvotes = db.Column(db.Integer)
+    downvotes = db.Column(db.Integer)
+    #__searchable__ = ['title'] #post will have title field indexed
+    #make a one to many relationship with "reviews"
+    menu_items = db.relationship('Item', backref='owner', lazy='dynamic')
+    # menuitems = db.relationship('MenuItem', backref='owner', lazy='dynamic')
+
+    def __repr__(self):
+        return '<DH Listing: {}>'.format(self.title)
+
+class Item(SearchableMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(50))
+    voteup = db.Column(db.Boolean)
+    votedown = db.Column(db.Boolean)
+    upvotes = db.Column(db.Integer)
+    downvotes = db.Column(db.Integer)
+    imageurl = db.Column(db.String(2048))
+    listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'))
+    #__searchable__ = ['title']
+    #reviews = db.relationship('Post', backref='author', lazy='dynamic') #Items will have anonymous reviews
+
+    # def avatar(self, size):
+    #     return '<Item: {}>'.format(self.title)
+
+    def __repr__(self):
+        return '<Item: {}>'.format(self.title)
+
 
 @login.user_loader
 def load_user(id):

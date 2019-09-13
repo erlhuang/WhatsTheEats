@@ -33,3 +33,7 @@ class SearchForm(FlaskForm):
         if 'csrf_enabled' not in kwargs:
             kwargs['csrf_enabled'] = False
         super(SearchForm, self).__init__(*args, **kwargs)
+
+class VoteForm(FlaskForm):
+    submit = SubmitField('Like')
+    submit2 = SubmitField('Dislike')

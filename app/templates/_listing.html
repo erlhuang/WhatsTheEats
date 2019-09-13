@@ -1,0 +1,23 @@
+<!-- <table class="table table-hover">
+    <tr>
+        <td width="70px">
+            {% if title %} -->
+<div class="col-xs-2">
+  <figure>
+    <a href="{{ url_for('main.dhlisting', listing=listing.acronym) }}">
+        <img src="{{ listing.imageurl }}" style="width: 250px" class="img-thumbnail" />
+        <figcaption>{{ listing.title }}</figcaption>
+    </a>
+  </figure>
+</div>
+            <!-- {% endif %}
+        </td>
+        <td> -->
+<!-- <a href="{{ url_for('main.dhlisting', listing=listing.acronym) }}">
+    {{ listing.title }}
+</a> -->
+<!--
+            <br>
+        </td>
+    </tr>
+</table> -->

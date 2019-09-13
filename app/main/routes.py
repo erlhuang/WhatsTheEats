@@ -5,7 +5,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm
-from app.models import User, Post
+from app.models import User, Post, Listing
 from app.main import bp
 
 @bp.before_request
@@ -119,3 +119,19 @@ def search():
     prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
         if page > 1 else None
     return render_template('search.html', title=_('Search'), posts=posts, next_url=next_url, prev_url=prev_url)
+
+@bp.route('/dh')
+def dining():
+    page = request.args.get('page', 1, type=int)
+    listings = Listing.query.order_by(Listing.title).paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('main.dining', page=listings.next_num) \
+        if listings.has_next else None
+    prev_url = url_for('main.dining', page=listings.prev_num) \
+        if listings.has_prev else None
+    return render_template('dining.html', title='Dining Halls', listings=listings.items, next_url=next_url, prev_url=prev_url)
+
+@bp.route('/dh/<listing>') #dining hall info
+def dhlisting(listing):
+    list = Listing.query.filter_by(acronym=listing).first_or_404()
+    items = list.menu_items
+    return render_template('dhlisting.html', listing=list, items=items)
