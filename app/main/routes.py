@@ -136,28 +136,32 @@ def dhlisting(listing):
     form = VoteForm()
     # dislikeForm = VoteDownForm()
     if form.validate_on_submit():
-        if form.likebtn.data: #if like btn was pressed
-            if(list.voteup == True): #we undo our upvote
-                list.voteup = False
-                list.upvotes -= 1
-            else: #we were neutral and hit upvote
-                list.voteup = True
-                list.upvotes += 1
-                if(list.votedown == True): #downvote -> upvote
-                    list.downvotes -= 1
-                    list.votedown = False
-            db.session.commit()
-            return redirect(url_for('main.dhlisting', listing=listing))
-        elif form.dislikebtn.data:
-            if(list.votedown == True):
-                list.votedown = False
-                list.downvotes -= 1
-            else:
-                list.votedown = True
-                list.downvotes += 1
-                if(list.voteup == True):
-                    list.upvotes -= 1
+        if current_user.is_authenticated:
+            if form.likebtn.data: #if like btn was pressed
+                if(list.voteup == True): #we undo our upvote
                     list.voteup = False
-            db.session.commit()
-            return redirect(url_for('main.dhlisting', listing=listing))
+                    list.upvotes -= 1
+                else: #we were neutral and hit upvote
+                    list.voteup = True
+                    list.upvotes += 1
+                    if(list.votedown == True): #downvote -> upvote
+                        list.downvotes -= 1
+                        list.votedown = False
+                db.session.commit()
+                return redirect(url_for('main.dhlisting', listing=listing))
+            elif form.dislikebtn.data:
+                if(list.votedown == True):
+                    list.votedown = False
+                    list.downvotes -= 1
+                else:
+                    list.votedown = True
+                    list.downvotes += 1
+                    if(list.voteup == True):
+                        list.upvotes -= 1
+                        list.voteup = False
+                db.session.commit()
+                return redirect(url_for('main.dhlisting', listing=listing))
+        else:
+            flash('You must log in to do that.')
+            return redirect(url_for('auth.login'))
     return render_template('dhlisting.html', listing=list, form=form)

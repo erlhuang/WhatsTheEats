@@ -53,6 +53,11 @@ followers = db.Table('followers',
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
+# listPref = db.Table('listPref',
+#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
+#     db.Column('listing_id', db.Integer, db.ForeignKey('user.id'))
+#     # db.Column('likePref', db.Integer)
+# )
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -134,7 +139,6 @@ class Listing(db.Model):
     #__searchable__ = ['title'] #post will have title field indexed
     #make a one to many relationship with "reviews"
     menu_items = db.relationship('Item', backref='owner', lazy='dynamic')
-    # menuitems = db.relationship('MenuItem', backref='owner', lazy='dynamic')
 
     def __repr__(self):
         return '<DH Listing: {}>'.format(self.title)
@@ -156,6 +160,12 @@ class Item(SearchableMixin, db.Model):
 
     def __repr__(self):
         return '<Item: {}>'.format(self.title)
+
+# class ListingPref(db.Model):
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'))
+#     value = db.Column(db.Integer)
+
 
 
 @login.user_loader

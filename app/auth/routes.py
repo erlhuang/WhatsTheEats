@@ -11,32 +11,32 @@ from app.auth.email import send_password_reset_email
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
-        return redirect(url_for('index')) #if already logged in then go to home
+        return redirect(url_for('main.index')) #if already logged in then go to home
     form = LoginForm()
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first() #match user
         if user is None or not user.check_password(form.password.data):
             #Either user doesnt exist or pw doesnt match
             flash('Invalid username or password')
-            return redirect(url_for('login'))
+            return redirect(url_for('auth.login'))
         #if not, we can log in
         login_user(user, remember=form.remember_me.data)
         #goes to the page we were on previously before login
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
-            next_page = url_for('index') #if there wasn't one go to home
+            next_page = url_for('main.index') #if there wasn't one go to home
         return redirect(next_page)
     return render_template('auth/login.html', title='Sign In', form=form)
 
 @bp.route('/logout')
 def logout():
     logout_user()
-    return redirect(url_for('index'))
+    return redirect(url_for('main.index'))
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated: #already logged in
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     form = RegistrationForm()
     if form.validate_on_submit():
         user = User(username=form.username.data, email=form.email.data)
@@ -44,7 +44,7 @@ def register():
         db.session.add(user)
         db.session.commit()
         flash('Congrats, you are registered! Please log in!')
-        return redirect(url_for('login')) #after registration redirect to login
+        return redirect(url_for('auth.login')) #after registration redirect to login
     return render_template('auth/register.html', title='Register', form=form)
 
 @bp.route('/reset_password_request', methods=['GET', 'POST'])
@@ -57,20 +57,20 @@ def reset_password_request():
         if user:
             send_password_reset_email(user)
         flash('Reset password instructions have been sent to your email.')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
     return render_template('auth/reset_password_request.html', title='Reset Password', form=form)
 
 @bp.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     user = User.verify_reset_password_token(token)
     if not user:
-        return redirect(url_for('index'))
+        return redirect(url_for('main.index'))
     form = ResetPasswordForm()
     if form.validate_on_submit():
         user.set_password(form.password.data)
         db.session.commit()
         flash('Your password has been reset.')
-        return redirect(url_for('login'))
+        return redirect(url_for('auth.login'))
     return render_template('auth/reset_password.html', form=form)
