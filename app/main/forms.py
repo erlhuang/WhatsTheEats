@@ -35,5 +35,5 @@ class SearchForm(FlaskForm):
         super(SearchForm, self).__init__(*args, **kwargs)
 
 class VoteForm(FlaskForm):
-    submit = SubmitField('Like')
-    submit2 = SubmitField('Dislike')
+    likebtn = SubmitField('Like')
+    dislikebtn = SubmitField('Dislike')

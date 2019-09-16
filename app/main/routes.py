@@ -4,7 +4,7 @@ from flask_login import current_user, login_required
 from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
-from app.main.forms import EditProfileForm, PostForm, SearchForm
+from app.main.forms import EditProfileForm, PostForm, SearchForm, VoteForm
 from app.models import User, Post, Listing
 from app.main import bp
 
@@ -130,8 +130,34 @@ def dining():
         if listings.has_prev else None
     return render_template('dining.html', title='Dining Halls', listings=listings.items, next_url=next_url, prev_url=prev_url)
 
-@bp.route('/dh/<listing>') #dining hall info
+@bp.route('/dh/<listing>', methods=['GET', 'POST']) #dining hall info
 def dhlisting(listing):
     list = Listing.query.filter_by(acronym=listing).first_or_404()
-    items = list.menu_items
-    return render_template('dhlisting.html', listing=list, items=items)
+    form = VoteForm()
+    # dislikeForm = VoteDownForm()
+    if form.validate_on_submit():
+        if form.likebtn.data: #if like btn was pressed
+            if(list.voteup == True): #we undo our upvote
+                list.voteup = False
+                list.upvotes -= 1
+            else: #we were neutral and hit upvote
+                list.voteup = True
+                list.upvotes += 1
+                if(list.votedown == True): #downvote -> upvote
+                    list.downvotes -= 1
+                    list.votedown = False
+            db.session.commit()
+            return redirect(url_for('main.dhlisting', listing=listing))
+        elif form.dislikebtn.data:
+            if(list.votedown == True):
+                list.votedown = False
+                list.downvotes -= 1
+            else:
+                list.votedown = True
+                list.downvotes += 1
+                if(list.voteup == True):
+                    list.upvotes -= 1
+                    list.voteup = False
+            db.session.commit()
+            return redirect(url_for('main.dhlisting', listing=listing))
+    return render_template('dhlisting.html', listing=list, form=form)
