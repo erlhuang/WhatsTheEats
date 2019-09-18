@@ -5,7 +5,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, VoteForm
-from app.models import User, Post, Listing
+from app.models import User, Post, Listing, ListingUserPref
 from app.main import bp
 
 @bp.before_request
@@ -133,35 +133,54 @@ def dining():
 @bp.route('/dh/<listing>', methods=['GET', 'POST']) #dining hall info
 def dhlisting(listing):
     list = Listing.query.filter_by(acronym=listing).first_or_404()
-    form = VoteForm()
-    # dislikeForm = VoteDownForm()
-    if form.validate_on_submit():
+    # form = VoteForm()
+    # if form.validate_on_submit():
+    if request.method == 'POST':
         if current_user.is_authenticated:
-            if form.likebtn.data: #if like btn was pressed
-                if(list.voteup == True): #we undo our upvote
-                    list.voteup = False
+            pref = current_user.findPref(list)
+            if request.form['btn'] == 'Like':
+                #PREF VALUES: 1 MEANS LIKE 2 MEANS DISLIKE
+                #0 means neutral
+                if(pref == 1): #we undo our upvote
+                    current_user.changePref(list, 0)
                     list.upvotes -= 1
-                else: #we were neutral and hit upvote
-                    list.voteup = True
+                elif(pref == -1): #no record in database yet
+                    newpref = ListingUserPref(likePref=1)
+                    newpref.child = list
+                    current_user.children.append(newpref)
                     list.upvotes += 1
-                    if(list.votedown == True): #downvote -> upvote
-                        list.downvotes -= 1
-                        list.votedown = False
+                elif(pref == 0):
+                    current_user.changePref(list, 1)
+                    list.upvotes += 1
+                elif(pref == 2):
+                    current_user.changePref(list, 1)
+                    list.upvotes += 1
+                    list.downvotes -= 1
                 db.session.commit()
                 return redirect(url_for('main.dhlisting', listing=listing))
-            elif form.dislikebtn.data:
-                if(list.votedown == True):
-                    list.votedown = False
+            elif request.form['btn'] == 'Dislike':
+                if(pref == 2):
+                    current_user.changePref(list, 0)
                     list.downvotes -= 1
-                else:
-                    list.votedown = True
+                elif(pref == -1):
+                    newpref = ListingUserPref(likepref=2)
+                    newpref.child = list
+                    current_user.children.append(newpref)
+                    list.downovtes += 1
+                elif(pref == 0):
+                    current_user.changePref(list, 2)
                     list.downvotes += 1
-                    if(list.voteup == True):
-                        list.upvotes -= 1
-                        list.voteup = False
+                elif(pref == 1):
+                    current_user.changePref(list, 2)
+                    list.downvotes += 1
+                    list.upvotes -= 1
                 db.session.commit()
                 return redirect(url_for('main.dhlisting', listing=listing))
         else:
             flash('You must log in to do that.')
             return redirect(url_for('auth.login'))
-    return render_template('dhlisting.html', listing=list, form=form)
+    if current_user.is_authenticated:
+        pref = current_user.findPref(list)
+    else:
+        pref = 0
+    return render_template('dhlisting.html', listing=list, pref=pref)

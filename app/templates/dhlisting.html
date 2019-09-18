@@ -2,17 +2,16 @@
 
 {% block app_content %}
   <h1>{{ _('%(listing)s', listing=listing.title) }}
-    <form action="" id="ratings" method="post">
-      {{ form.hidden_tag() }}
-      {% if listing.voteup %}
-        <div id="like" class="btn btn-primary btn-lg active" role="button">{{ form.likebtn }}</div>
+    <form action="" method="post" style="display:inline">
+      {% if pref == 1 %}
+        <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg active" role="button">
       {% else %}
-        <div id="like" class="btn btn-primary btn-lg" role="button">{{ form.likebtn }}</div>
+        <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg" role="button">
       {% endif %}
-      {% if listing.votedown %}
-        <div id="dislike" class="btn btn-primary btn-lg active" role="button">{{ form.dislikebtn }}</div>
+      {% if pref == 2 %}
+        <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg active" role="button">
       {% else %}
-        <div id="dislike" class="btn btn-primary btn-lg" role="button">{{ form.dislikebtn }}</div>
+        <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg" role="button">
       {% endif %}
     </form>
   </h1>

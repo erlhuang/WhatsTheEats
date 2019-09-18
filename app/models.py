@@ -53,11 +53,13 @@ followers = db.Table('followers',
     db.Column('followed_id', db.Integer, db.ForeignKey('user.id'))
 )
 
-# listPref = db.Table('listPref',
-#     db.Column('user_id', db.Integer, db.ForeignKey('user.id')),
-#     db.Column('listing_id', db.Integer, db.ForeignKey('user.id'))
-#     # db.Column('likePref', db.Integer)
-# )
+class ListingUserPref(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'), primary_key=True)
+    likePref = db.Column(db.Integer)
+    child = db.relationship('Listing')
+    parent = db.relationship('User', back_populates='children')
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -85,6 +87,8 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
+    # listprefs = db.relationship('ListingUserPref', back_populates='userpref')
+    children = db.relationship('ListingUserPref')
     def followed_posts(self):
         followed = Post.query.join(
         followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id)
@@ -116,6 +120,19 @@ class User(UserMixin, db.Model):
             return
         return User.query.get(id)
 
+    def findPref(self, listing):
+        #There has to be a faster way to do this
+        #but I'll try get this working first...
+        for userList in self.children:
+            if(userList.child.id == listing.id):
+                return userList.likePref
+        return -1 #means no preference found
+
+    def changePref(self, listing, value):
+        for userList in self.children:
+            if(userList.child.id == listing.id):
+                userList.likePref = value
+
 class Post(SearchableMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
@@ -139,7 +156,7 @@ class Listing(db.Model):
     #__searchable__ = ['title'] #post will have title field indexed
     #make a one to many relationship with "reviews"
     menu_items = db.relationship('Item', backref='owner', lazy='dynamic')
-
+    parents = db.relationship('ListingUserPref', backref='uservoted')
     def __repr__(self):
         return '<DH Listing: {}>'.format(self.title)
 
@@ -155,18 +172,8 @@ class Item(SearchableMixin, db.Model):
     #__searchable__ = ['title']
     #reviews = db.relationship('Post', backref='author', lazy='dynamic') #Items will have anonymous reviews
 
-    # def avatar(self, size):
-    #     return '<Item: {}>'.format(self.title)
-
     def __repr__(self):
         return '<Item: {}>'.format(self.title)
-
-# class ListingPref(db.Model):
-#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-#     listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'))
-#     value = db.Column(db.Integer)
-
-
 
 @login.user_loader
 def load_user(id):
