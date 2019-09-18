@@ -5,7 +5,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, VoteForm
-from app.models import User, Post, Listing, ListingUserPref
+from app.models import User, Post, Listing, ListingUserPref, Item
 from app.main import bp
 
 @bp.before_request
@@ -183,4 +183,11 @@ def dhlisting(listing):
         pref = current_user.findPref(list)
     else:
         pref = 0
-    return render_template('dhlisting.html', listing=list, pref=pref)
+    numLikes = str(list.upvotes)
+    numDislikes = str(list.downvotes)
+    return render_template('dhlisting.html', listing=list, pref=pref, numLikes=numLikes, numDislikes=numDislikes)
+
+@bp.route('/dh/<listing>/<item>', methods=['GET', 'POST'])
+def itemlisting(listing, item):
+    theitem = Item.query.filter_by(acronym=item).first_or_404()
+    return render_template('itemlisting.html', item=theitem)

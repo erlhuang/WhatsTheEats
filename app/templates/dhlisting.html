@@ -1,20 +1,27 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <h1>{{ _('%(listing)s', listing=listing.title) }}
-    <form action="" method="post" style="display:inline">
-      {% if pref == 1 %}
-        <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg active" role="button">
-      {% else %}
-        <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg" role="button">
-      {% endif %}
-      {% if pref == 2 %}
-        <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg active" role="button">
-      {% else %}
-        <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg" role="button">
-      {% endif %}
-    </form>
-  </h1>
+<div class="jumbotron">
+  <h1 class="display-4">{{ _('%(listing)s', listing=listing.title) }}</h1>
+  <p class="lead">Accepts cash, credit, and flexis</p>
+  <hr class="my-4">
+  <!-- <p>Some additional text if necessary .</p> -->
+  <!-- <form action="" method="post" style="display:inline"> -->
+  <form action="" method="post">
+    <span style="display:inline">{{ _('%(numlikes)s', numlikes=numLikes) }}</span>
+    {% if pref == 1 %}
+      <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg active" role="button">
+    {% else %}
+      <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg" role="button">
+    {% endif %}
+    <span style="display:inline">{{ _('%(numdislikes)s', numdislikes=numDislikes) }}</span>
+    {% if pref == 2 %}
+      <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg active" role="button">
+    {% else %}
+      <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg" role="button">
+    {% endif %}
+  </form>
+</div>
   <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
   <script type="text/javascript">
     $('#like').click(function() {

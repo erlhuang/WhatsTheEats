@@ -1,7 +1,7 @@
 <table class="table table-hover">
     <tr>
         <td>
-          <a href="{{ url_for('main.index') }}">
+          <a href="{{ url_for('main.itemlisting', listing=item.owner.acronym, item=item.acronym) }}">
               {{ item.title }}
           </a>
         </td>

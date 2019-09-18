@@ -60,6 +60,13 @@ class ListingUserPref(db.Model):
     child = db.relationship('Listing')
     parent = db.relationship('User', back_populates='children')
 
+class ItemUserPref(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    item_id = db.Column(db.Integer, db.ForeignKey('item.id'), primary_key=True)
+    itemPref = db.Column(db.Integer)
+    itemchild = db.relationship('Item')
+    itemparent = db.relationship('User', back_populates='itemchildren')
+
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -89,6 +96,7 @@ class User(UserMixin, db.Model):
 
     # listprefs = db.relationship('ListingUserPref', back_populates='userpref')
     children = db.relationship('ListingUserPref')
+    itemchildren = db.relationship('ItemUserPref')
     def followed_posts(self):
         followed = Post.query.join(
         followers, (followers.c.followed_id == Post.user_id)).filter(followers.c.follower_id == self.id)
@@ -156,11 +164,11 @@ class Listing(db.Model):
     #__searchable__ = ['title'] #post will have title field indexed
     #make a one to many relationship with "reviews"
     menu_items = db.relationship('Item', backref='owner', lazy='dynamic')
-    parents = db.relationship('ListingUserPref', backref='uservoted')
+    # parents = db.relationship('ListingUserPref', backref='uservoted')
     def __repr__(self):
         return '<DH Listing: {}>'.format(self.title)
 
-class Item(SearchableMixin, db.Model):
+class Item(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50))
     voteup = db.Column(db.Boolean)
@@ -169,6 +177,7 @@ class Item(SearchableMixin, db.Model):
     downvotes = db.Column(db.Integer)
     imageurl = db.Column(db.String(2048))
     listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'))
+    acronym = db.Column(db.String(50))
     #__searchable__ = ['title']
     #reviews = db.relationship('Post', backref='author', lazy='dynamic') #Items will have anonymous reviews
 
