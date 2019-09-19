@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="jumbotron">
+  <h1 class="display-4">{{ _('%(item)s', item=item.title) }}</h1>
+  <p class="lead">some custom text later</p>
+  <hr class="my-4">
+  <!-- <p>Some additional text if necessary .</p> -->
+  <form action="" method="post">
+    <span style="display:inline">{{ _('%(numlikes)s', numlikes=numlikes) }}</span>
+    {% if pref == 1 %}
+      <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg active" role="button">
+    {% else %}
+      <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg" role="button">
+    {% endif %}
+    <span style="display:inline">{{ _('%(numdislikes)s', numdislikes=numdislikes) }}</span>
+    {% if pref == 2 %}
+      <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg active" role="button">
+    {% else %}
+      <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg" role="button">
+    {% endif %}
+  </form>
+</div>
+  <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
+  <script type="text/javascript">
+    $('#like').click(function() {
+      $(this).toggleClass('active');
+      $('#dislike').removeClass('active');
+    });
+
+    $('#dislike').click(function() {
+      $(this).toggleClass('active');
+      $('#like').removeClass('active');
+    });
+  </script>
+{% endblock %}

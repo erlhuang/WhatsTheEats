@@ -5,7 +5,7 @@ from flask_babel import _, get_locale
 from guess_language import guess_language
 from app import db
 from app.main.forms import EditProfileForm, PostForm, SearchForm, VoteForm
-from app.models import User, Post, Listing, ListingUserPref, Item
+from app.models import User, Post, Listing, ListingUserPref, Item, ItemUserPref
 from app.main import bp
 
 @bp.before_request
@@ -163,10 +163,10 @@ def dhlisting(listing):
                     current_user.changePref(list, 0)
                     list.downvotes -= 1
                 elif(pref == -1):
-                    newpref = ListingUserPref(likepref=2)
+                    newpref = ListingUserPref(likePref=2)
                     newpref.child = list
                     current_user.children.append(newpref)
-                    list.downovtes += 1
+                    list.downvotes += 1
                 elif(pref == 0):
                     current_user.changePref(list, 2)
                     list.downvotes += 1
@@ -183,11 +183,57 @@ def dhlisting(listing):
         pref = current_user.findPref(list)
     else:
         pref = 0
-    numLikes = str(list.upvotes)
-    numDislikes = str(list.downvotes)
-    return render_template('dhlisting.html', listing=list, pref=pref, numLikes=numLikes, numDislikes=numDislikes)
+    return render_template('dhlisting.html', listing=list, pref=pref, numLikes=list.upvotes, numDislikes=list.downvotes)
 
 @bp.route('/dh/<listing>/<item>', methods=['GET', 'POST'])
 def itemlisting(listing, item):
     theitem = Item.query.filter_by(acronym=item).first_or_404()
-    return render_template('itemlisting.html', item=theitem)
+    if request.method == 'POST':
+        if current_user.is_authenticated:
+            pref = current_user.findItemPref(theitem)
+            if request.form['btn'] == 'Like':
+                #PREF VALUES: 1 MEANS LIKE 2 MEANS DISLIKE
+                #0 means neutral
+                if(pref == 1): #we undo our upvote
+                    current_user.changeItemPref(list, 0)
+                    theitem.upvotes -= 1
+                elif(pref == -1): #no record in database yet
+                    newpref = ItemUserPref(itemPref=1)
+                    newpref.itemchild = theitem
+                    current_user.itemchildren.append(newpref)
+                    theitem.upvotes += 1
+                elif(pref == 0):
+                    current_user.changeItemPref(theitem, 1)
+                    theitem.upvotes += 1
+                elif(pref == 2):
+                    current_user.changeItemPref(theitem, 1)
+                    theitem.upvotes += 1
+                    theitem.downvotes -= 1
+                db.session.commit()
+                return redirect(url_for('main.itemlisting', listing=theitem.owner.acronym, item=item))
+            elif request.form['btn'] == 'Dislike':
+                if(pref == 2):
+                    current_user.changeItemPref(theitem, 0)
+                    theitem.downvotes -= 1
+                elif(pref == -1):
+                    newpref = ItemUserPref(itemPref=2)
+                    newpref.itemchild = theitem
+                    current_user.itemchildren.append(newpref)
+                    theitem.downvotes += 1
+                elif(pref == 0):
+                    current_user.changeItemPref(theitem, 2)
+                    theitem.downvotes += 1
+                elif(pref == 1):
+                    current_user.changeItemPref(theitem, 2)
+                    theitem.downvotes += 1
+                    theitem.upvotes -= 1
+                db.session.commit()
+                return redirect(url_for('main.itemlisting', listing=theitem.owner.acronym, item=item))
+        else:
+            flash('You must log in to do that.')
+            return redirect(url_for('auth.login'))
+    if current_user.is_authenticated:
+        pref = current_user.findItemPref(theitem)
+    else:
+        pref = 0
+    return render_template('itemlisting.html', item=theitem, pref=pref, numlikes=theitem.upvotes, numdislikes=theitem.downvotes)

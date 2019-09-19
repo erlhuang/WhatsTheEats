@@ -141,6 +141,18 @@ class User(UserMixin, db.Model):
             if(userList.child.id == listing.id):
                 userList.likePref = value
 
+    def findItemPref(self, item):
+        for userList in self.itemchildren:
+            if(userList.itemchild.id == item.id):
+                return userList.itemPref
+        return -1 #means no preference found
+
+    def changeItemPref(self, listing, value):
+        for userList in self.itemchildren:
+            if(userList.itemchild.id == item.id):
+                userList.itemPref = value
+
+
 class Post(SearchableMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     body = db.Column(db.String(140))
