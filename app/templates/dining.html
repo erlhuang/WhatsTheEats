@@ -1,25 +1,38 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <div class="container">
-    <div class="row text-center">
+<main role="main">
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">UC Santa Cruz Dining Halls</h1>
+      <p class="lead text-muted">Find the items people here love!</p>
+    </div>
+  </section>
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <div class="row">
         {% for listing in listings %}
           {% include '_listing.html' %}
         {% endfor %}
+      </div>
     </div>
   </div>
-  <nav aria-label="...">
-      <ul class="pager">
-          <li class="previous{% if not prev_url %} disabled{% endif %}">
-              <a href="{{ prev_url or '#' }}">
-                  <span aria-hidden="true">&larr;</span> Back
-              </a>
-          </li>
-          <li class="next{% if not next_url %} disabled{% endif %}">
-              <a href="{{ next_url or '#' }}">
-                  Next <span aria-hidden="true">&rarr;</span>
-              </a>
-          </li>
-      </ul>
-  </nav>
+
+  <section class="jumbotron text-center">
+    <div class="container">
+      <h1 class="jumbotron-heading">Food Trucks</h1>
+      <p class="lead text-muted">In various locations on campus</p>
+    </div>
+  </section>
+  <br>
+  <div class="album py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        {% for listing in restaurants %}
+          {% include '_listing.html' %}
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</main>
 {% endblock %}

@@ -20,6 +20,17 @@ class SearchableMixin(object):
             db.case(when, value=cls.id)), total
 
     @classmethod
+    def searchID(cls, expression, listid, page, per_page):
+        ids, total = query_index(cls.__tablename__, expression, page, per_page)
+        if total == 0:
+            return cls.query.filter_by(id=0), 0
+        when = []
+        for i in range(len(ids)):
+            when.append((ids[i], i))
+        return cls.query.filter(cls.id.in_(ids)).filter_by(listing_id=listid).order_by(
+            db.case(when, value=cls.id)), total
+
+    @classmethod
     def before_commit(cls, session):
         session._changes = {
             'add': list(session.new),
@@ -94,7 +105,6 @@ class User(UserMixin, db.Model):
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
-    # listprefs = db.relationship('ListingUserPref', back_populates='userpref')
     children = db.relationship('ListingUserPref')
     itemchildren = db.relationship('ItemUserPref')
     def followed_posts(self):
@@ -173,24 +183,35 @@ class Listing(db.Model):
     votedown = db.Column(db.Boolean)
     upvotes = db.Column(db.Integer)
     downvotes = db.Column(db.Integer)
+    description = db.Column(db.String(2048))
+    weekdayHrs = db.Column(db.String(50))
+    weekendHrs = db.Column(db.String(50))
+    percentLikes = db.Column(db.Integer, default=0)
+    restaurant = db.Column(db.Boolean)
+
     #__searchable__ = ['title'] #post will have title field indexed
-    #make a one to many relationship with "reviews"
     menu_items = db.relationship('Item', backref='owner', lazy='dynamic')
-    # parents = db.relationship('ListingUserPref', backref='uservoted')
     def __repr__(self):
         return '<DH Listing: {}>'.format(self.title)
 
-class Item(db.Model):
+    def itemSearch(self, item):
+        for listItems in self.menu_items:
+            if(listItems.title == item):
+                return listItems
+
+class Item(SearchableMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(50))
     voteup = db.Column(db.Boolean)
     votedown = db.Column(db.Boolean)
-    upvotes = db.Column(db.Integer)
-    downvotes = db.Column(db.Integer)
+    upvotes = db.Column(db.Integer, default=0)
+    downvotes = db.Column(db.Integer, default=0)
     imageurl = db.Column(db.String(2048))
     listing_id = db.Column(db.Integer, db.ForeignKey('listing.id'))
     acronym = db.Column(db.String(50))
-    #__searchable__ = ['title']
+    percentLikes = db.Column(db.Integer, default=0)
+    nutritionURL = db.Column(db.String(2048), default='')
+    __searchable__ = ['title']
     #reviews = db.relationship('Post', backref='author', lazy='dynamic') #Items will have anonymous reviews
 
     def __repr__(self):

@@ -3,3 +3,4 @@ __pycache__/
 project_env/
 tests.py
 app.db
+.flaskenv

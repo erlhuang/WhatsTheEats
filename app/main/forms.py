@@ -21,12 +21,11 @@ class EditProfileForm(FlaskForm):
                 raise ValidationError('That username is already taken.')
 
 class PostForm(FlaskForm):
-    post = TextAreaField('Post something', validators=[ DataRequired(), Length(min=1, max=140)])
+    post = TextAreaField('Post something', validators=[DataRequired(), Length(min=1, max=140)])
     submit = SubmitField('Submit')
 
 class SearchForm(FlaskForm):
     q = StringField(_l('Search'), validators=[DataRequired()])
-
     def __init__(self, *args, **kwargs):
         if 'formdata' not in kwargs:
             kwargs['formdata'] = request.args

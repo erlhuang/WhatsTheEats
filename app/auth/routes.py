@@ -4,9 +4,12 @@ from flask_login import current_user, login_user, logout_user
 from flask_babel import _
 from app import db
 from app.auth import bp
-from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm
-from app.models import User
+from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ListingForm, ItemForm, AutomateForm
+from app.models import User, Listing, Item
 from app.auth.email import send_password_reset_email
+from app.main.menucrawler import crawlcnine
+import json
+import requests
 
 @bp.route('/login', methods=['GET', 'POST'])
 def login():
@@ -32,6 +35,7 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('main.index'))
+
 
 @bp.route('/register', methods=['GET', 'POST'])
 def register():
@@ -77,5 +81,51 @@ def reset_password(token):
 
 @bp.route('/admin', methods=['GET', 'POST'])
 def addListing():
-    if current_user.username != 'soupercell'
+    if current_user.username != 'soupercell':
         return redirect(url_for('main.index'))
+    else:
+        # print('poop')
+        form = ListingForm()
+        if form.validate_on_submit():
+            newListing = Listing(title=form.title.data, imageurl=form.imageurl.data, \
+            weekdayHrs=form.timeopen.data, weekendHrs=form.timeopen2.data, \
+            description=form.addedInfo.data, upvotes=0, downvotes=0, \
+            acronym=form.acronym.data, restaurant=form.isRestaurant.data)
+            db.session.add(newListing)
+            db.session.commit()
+            flash('Listing added.')
+            return redirect(url_for('main.dining'))
+        return render_template('auth/admin.html', form=form)
+
+@bp.route('/admin/<listing>', methods=['GET', 'POST'])
+def addItem(listing):
+    # if current_user.username != 'soupercell':
+    #     return redirect(url_for('main.index'))
+    # else:
+    #     form = ItemForm()
+    #     if form.validate_on_submit():
+    #         list = Listing.query.filter_by(acronym=listing).first_or_404()
+    #         newItem = Item(title=form.title.data, acronym=form.acronym.data, \
+    #         imageurl=form.imageurl.data, nutritionURL=form.itemURL.data)
+    #         list.menu_items.append(newItem)
+    #         db.session.commit()
+    #         flash('Item added.')
+    #         return redirect(url_for('main.dining'))
+    #     return render_template('auth/admin.html', form=form)
+    if current_user.username != 'soupercell':
+        return redirect(url_for('main.index'))
+    else:
+        form = AutomateForm()
+        if form.validate_on_submit():
+            crawlcnine()
+        return render_template('auth/admin.html', form=form)
+#
+# @bp.route('/admin/button', methods=['GET', 'POST'])
+# def addItem(listing):
+#     if current_user.username != 'soupercell':
+#         return redirect(url_for('main.index'))
+#     else:
+#         form = AutomateForm()
+#         if form.validate_on_submit():
+#             crawlcnine()
+#         return render_template('auth/admin.html', form=form)

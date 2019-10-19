@@ -7,20 +7,29 @@
   <hr class="my-4">
   <!-- <p>Some additional text if necessary .</p> -->
   <!-- <form action="" method="post" style="display:inline"> -->
-  <form action="" method="post">
-    <span style="display:inline">{{ _('%(numlikes)s', numlikes=numLikes) }}</span>
+  <form action="" method="post" style="margin-bottom: 0.75rem;">
+    <span style="display:inline">{{ _('%(numlikes)s', numlikes=listing.upvotes) }}</span>
     {% if pref == 1 %}
       <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg active" role="button">
     {% else %}
       <input type="submit" name="btn" value="Like" class="btn btn-primary btn-lg" role="button">
     {% endif %}
-    <span style="display:inline">{{ _('%(numdislikes)s', numdislikes=numDislikes) }}</span>
+    <span style="display:inline">{{ _('%(numdislikes)s', numdislikes=listing.downvotes) }}</span>
     {% if pref == 2 %}
       <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg active" role="button">
     {% else %}
       <input type="submit" name="btn" value="Dislike" class="btn btn-primary btn-lg" role="button">
     {% endif %}
   </form>
+  {% if g.search_form %}
+  <form class="navbar-form navbar-left" method="get"
+          action="{{ url_for('main.search', listing=listing.acronym) }}" style="display: inline">
+      <div class="form-group" style="display: inline">
+          {{ g.search_form.q(size=20, class='form-control',
+              placeholder=g.search_form.q.label.text) }}
+      </div>
+  </form>
+{% endif %}
 </div>
   <script src="https://code.jquery.com/jquery-3.4.1.js"></script>
   <script type="text/javascript">
@@ -34,7 +43,7 @@
       $('#like').removeClass('active');
     });
   </script>
-  {% for item in listing.menu_items %}
+  {% for item in items %}
       {% include '_item.html' %}
   {% endfor %}
 {% endblock %}

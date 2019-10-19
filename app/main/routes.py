@@ -107,28 +107,35 @@ def explore():
         if posts.has_prev else None
     return render_template('index.html', title='Explore', posts=posts.items, next_url=next_url, prev_url=prev_url)
 
-@bp.route('/search')
+@bp.route('/dh/<listing>/search')
 @login_required
-def search():
+def search(listing):
     if not g.search_form.validate():
         return redirect(url_for('main.explore'))
     page = request.args.get('page', 1, type=int)
-    posts, total = Post.search(g.search_form.q.data, page, current_app.config['POSTS_PER_PAGE'])
+    if not listing:
+        posts, total = Item.search(g.search_form.q.data, page, current_app.config['POSTS_PER_PAGE'])
+    else:
+        list = Listing.query.filter_by(acronym=listing).first_or_404()
+        items, total = Item.searchID(g.search_form.q.data, list.id, page, current_app.config['POSTS_PER_PAGE'])
     next_url = url_for('main.search', q=g.search_form.q.data, page=page + 1) \
         if total > page * current_app.config['POSTS_PER_PAGE'] else None
     prev_url = url_for('main.search', q=g.search_form.q.data, page=page - 1) \
         if page > 1 else None
-    return render_template('search.html', title=_('Search'), posts=posts, next_url=next_url, prev_url=prev_url)
+    if not listing:
+        return render_template('search.html', title=_('Search'), posts=posts, next_url=next_url, prev_url=prev_url)
+    else:
+        if current_user.is_authenticated:
+            pref = current_user.findPref(list)
+        else:
+            pref = 0
+        return render_template('dhlisting.html', listing=list, items=items, pref=pref)
 
 @bp.route('/dh')
 def dining():
-    page = request.args.get('page', 1, type=int)
-    listings = Listing.query.order_by(Listing.title).paginate(page, current_app.config['POSTS_PER_PAGE'], False)
-    next_url = url_for('main.dining', page=listings.next_num) \
-        if listings.has_next else None
-    prev_url = url_for('main.dining', page=listings.prev_num) \
-        if listings.has_prev else None
-    return render_template('dining.html', title='Dining Halls', listings=listings.items, next_url=next_url, prev_url=prev_url)
+    dh = Listing.query.filter_by(restaurant=False).order_by(Listing.percentLikes.desc())
+    rest = Listing.query.filter_by(restaurant=True).order_by(Listing.percentLikes.desc())
+    return render_template('dining.html', title=('Dining Halls'), listings=dh, restaurants=rest)
 
 @bp.route('/dh/<listing>', methods=['GET', 'POST']) #dining hall info
 def dhlisting(listing):
@@ -156,6 +163,11 @@ def dhlisting(listing):
                     current_user.changePref(list, 1)
                     list.upvotes += 1
                     list.downvotes -= 1
+                totalVotes = list.upvotes + list.downvotes
+                if(totalVotes != 0):
+                    list.percentLikes = (list.upvotes / totalVotes) * 100
+                else:
+                    list.percentLikes = 0
                 db.session.commit()
                 return redirect(url_for('main.dhlisting', listing=listing))
             elif request.form['btn'] == 'Dislike':
@@ -174,6 +186,11 @@ def dhlisting(listing):
                     current_user.changePref(list, 2)
                     list.downvotes += 1
                     list.upvotes -= 1
+                totalVotes = list.upvotes + list.downvotes
+                if(totalVotes != 0):
+                    list.percentLikes = (list.upvotes / totalVotes) * 100
+                else:
+                    list.percentLikes = 0
                 db.session.commit()
                 return redirect(url_for('main.dhlisting', listing=listing))
         else:
@@ -183,11 +200,12 @@ def dhlisting(listing):
         pref = current_user.findPref(list)
     else:
         pref = 0
-    return render_template('dhlisting.html', listing=list, pref=pref, numLikes=list.upvotes, numDislikes=list.downvotes)
+    items = Item.query.filter_by(listing_id=list.id).order_by(Item.percentLikes.desc())
+    return render_template('dhlisting.html', listing=list, pref=pref, items=items )
 
 @bp.route('/dh/<listing>/<item>', methods=['GET', 'POST'])
 def itemlisting(listing, item):
-    theitem = Item.query.filter_by(acronym=item).first_or_404()
+    theitem = Item.query.filter_by(id=item).first_or_404()
     if request.method == 'POST':
         if current_user.is_authenticated:
             pref = current_user.findItemPref(theitem)
@@ -209,6 +227,11 @@ def itemlisting(listing, item):
                     current_user.changeItemPref(theitem, 1)
                     theitem.upvotes += 1
                     theitem.downvotes -= 1
+                totalVotes = theitem.upvotes + theitem.downvotes
+                if(totalVotes != 0):
+                    theitem.percentLikes = (theitem.upvotes / totalVotes) * 100
+                else:
+                    theitem.percentLikes = 0
                 db.session.commit()
                 return redirect(url_for('main.itemlisting', listing=theitem.owner.acronym, item=item))
             elif request.form['btn'] == 'Dislike':
@@ -227,6 +250,11 @@ def itemlisting(listing, item):
                     current_user.changeItemPref(theitem, 2)
                     theitem.downvotes += 1
                     theitem.upvotes -= 1
+                totalVotes = theitem.upvotes + theitem.downvotes
+                if(totalVotes != 0):
+                    theitem.percentLikes = (theitem.upvotes / totalVotes) * 100
+                else:
+                    theitem.percentLikes = 0
                 db.session.commit()
                 return redirect(url_for('main.itemlisting', listing=theitem.owner.acronym, item=item))
         else:
@@ -237,3 +265,8 @@ def itemlisting(listing, item):
     else:
         pref = 0
     return render_template('itemlisting.html', item=theitem, pref=pref, numlikes=theitem.upvotes, numdislikes=theitem.downvotes)
+
+@bp.route('/dh/<listing>/<item>/popup')
+def item_popup(listing, item):
+    item = Item.query.filter_by(listing_id=list.id, id=item).first_or_404()
+    return render_template('item_popup.html', item=item)

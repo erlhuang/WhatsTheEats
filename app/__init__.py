@@ -45,7 +45,6 @@ def create_app(config_class=Config):
 
     app.elasticsearch = Elasticsearch([app.config['ELASTICSEARCH_URL']]) \
         if app.config['ELASTICSEARCH_URL'] else None
-
     if not app.debug and not app.testing:
         if app.config['MAIL_SERVER']:
             auth = None

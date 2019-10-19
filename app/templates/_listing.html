@@ -1,23 +1,29 @@
-<!-- <table class="table table-hover">
-    <tr>
-        <td width="70px">
-            {% if title %} -->
-<div class="col-xs-2">
-  <figure>
+<div class="col-md-4">
+  <div class="card mb-4 shadow-sm" style="margin-bottom: 0.75rem; margin-right: 0.75rem">
     <a href="{{ url_for('main.dhlisting', listing=listing.acronym) }}">
-        <img src="{{ listing.imageurl }}" style="width: 250px" class="img-thumbnail" />
-        <figcaption>{{ listing.title }}</figcaption>
+        <img class="img-fluid img-thumbnail" src="{{ listing.imageurl }}" style="width: 250px; height: 175px" alt="">
     </a>
-  </figure>
+    <div class="card-body">
+      <p class="card-text">{{ listing.title }}</p>
+      <div class="d-flex justify-content-between align-items-center">
+        <!-- <div class="btn-group">
+          <button type="button" class="btn btn-sm btn-outline-secondary">View</button>
+        </div> -->
+        {% if listing.percentLikes >= 70 %}
+          <div class="progress" style="height: 3px;">
+            <div class="progress-bar bg-success" role="progressbar" style="width: {{ listing.percentLikes }}%" aria-valuenow="{{ listing.percentLikes }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        {% elif listing.percentLikes >= 50 %}
+          <div class="progress" style="height: 3px;">
+            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ listing.percentLikes }}%" aria-valuenow="{{ listing.percentLikes }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        {% else %}
+          <div class="progress" style="height: 3px;">
+            <div class="progress-bar bg-danger" role="progressbar" style="width: {{ listing.percentLikes }}%" aria-valuenow="{{ listing.percentLikes }}" aria-valuemin="0" aria-valuemax="100"></div>
+          </div>
+        {% endif %}
+        <small class="text-muted">{{ listing.percentLikes }}%</small>
+      </div>
+    </div>
+  </div>
 </div>
-            <!-- {% endif %}
-        </td>
-        <td> -->
-<!-- <a href="{{ url_for('main.dhlisting', listing=listing.acronym) }}">
-    {{ listing.title }}
-</a> -->
-<!--
-            <br>
-        </td>
-    </tr>
-</table> -->
