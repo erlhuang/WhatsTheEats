@@ -7,7 +7,7 @@ from app.auth import bp
 from app.auth.forms import LoginForm, RegistrationForm, ResetPasswordRequestForm, ResetPasswordForm, ListingForm, ItemForm, AutomateForm
 from app.models import User, Listing, Item
 from app.auth.email import send_password_reset_email
-from app.main.menucrawler import crawlcnine
+from app.main.menucrawler import crawlmenu
 import json
 import requests
 
@@ -107,6 +107,7 @@ def addItem(listing):
     #         list = Listing.query.filter_by(acronym=listing).first_or_404()
     #         newItem = Item(title=form.title.data, acronym=form.acronym.data, \
     #         imageurl=form.imageurl.data, nutritionURL=form.itemURL.data)
+    #         db.session.add(newItem)
     #         list.menu_items.append(newItem)
     #         db.session.commit()
     #         flash('Item added.')
@@ -117,15 +118,5 @@ def addItem(listing):
     else:
         form = AutomateForm()
         if form.validate_on_submit():
-            crawlcnine()
+            crawlmenu()
         return render_template('auth/admin.html', form=form)
-#
-# @bp.route('/admin/button', methods=['GET', 'POST'])
-# def addItem(listing):
-#     if current_user.username != 'soupercell':
-#         return redirect(url_for('main.index'))
-#     else:
-#         form = AutomateForm()
-#         if form.validate_on_submit():
-#             crawlcnine()
-#         return render_template('auth/admin.html', form=form)

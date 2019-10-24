@@ -1,4 +1,0 @@
-FLASK_APP=flasktest.py
-ELASTICSEARCH_URL=http://localhost:9200
-GOOGLE_CLIENT_ID=985895491740-ffpko99blvpasj8bc2selcickulh603k.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=XGSJmgkCXsPbcMeWd9xCQBKZ
